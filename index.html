@@ -1,0 +1,75 @@
+<script type="text/javascript">
+	$(document).ready(function () {
+		$("#btFilter").click(function () {
+			setFilterStorage();
+		});
+		getFilterStorage();
+	});
+
+	function applyFilter() {
+		var $filter = new Array();
+		var cbCat = $("#SelectedCategoria option:selected");
+		var cbTp = $("#SelectedTipoPrata option:selected");
+
+		if (cbCat.index() > 0) {
+			var cat = cbCat.text();
+			$filter.push({ field: "Categoria", operator: "contains", value: cat });
+		}
+
+		if (cbTp.index() > 0) {
+			var tp = cbTp.text();
+			$filter.push({ field: "TipoPrata", operator: "contains", value: tp });
+		}
+
+		var esgotados = $("#ShowEsgotados").is(":checked");
+		if (esgotados) {
+			$filter.push({ field: "EmEstoque", operator: "gte", value: 0 });
+		} else {
+			$filter.push({ field: "EmEstoque", operator: "gt", value: 0 });
+		}
+
+		var nome = $("#ftNome").val();
+		$filter.push({ field: "Nome", operator: "contains", value: nome });
+
+		var list = $("#listView").data("kendoListView");
+		list.dataSource.filter($filter);
+		list.dataSource.pageSize($("#cbPageSize").val());
+	}
+
+	function isStorageAvailable() {
+		return (typeof (Storage) !== "undefined");
+	}
+
+	function setFilterStorage() {
+		if (isStorageAvailable) {
+			var mostrarEsgotados = $("#ShowEsgotados").is(":checked");
+			var pageSize = $("#cbPageSize").val();
+			var textFiltro = $("#ftNome").val();
+			var categoria = $("#SelectedCategoria option:selected").val();
+			var tipoPrata = $("#SelectedTipoPrata option:selected").val();
+			sessionStorage.setItem("mostrarEsgotados", mostrarEsgotados);
+			sessionStorage.setItem("pageSize", pageSize);
+			sessionStorage.setItem("textFiltro", textFiltro);
+			sessionStorage.setItem("categoria", categoria);
+			sessionStorage.setItem("tipoPrata", tipoPrata);
+			sessionStorage.setItem("isFilterSaved", true);
+			sessionStorage.setItem("page", 1);
+			applyFilter();
+		}
+	}
+
+	function getFilterStorage() {
+		if (isStorageAvailable && sessionStorage.isFilterSaved == "true") {
+			if (sessionStorage.mostrarEsgotados == "true") {
+				$("#ShowEsgotados").prop("checked", true);
+			} else {
+				$("#ShowEsgotados").prop("checked", false);
+			}
+			$("#cbPageSize").val(sessionStorage.pageSize);
+			$("#ftNome").val(sessionStorage.textFiltro);
+			$("#SelectedCategoria").val(sessionStorage.categoria);
+			$("#SelectedTipoPrata").val(sessionStorage.tipoPrata);
+			applyFilter();
+		}
+	}
+</script>
